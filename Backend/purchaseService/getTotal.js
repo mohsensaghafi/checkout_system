@@ -46,7 +46,7 @@ module.exports.handler = (event, context, callback) => {
       }
     }
 
-    const purchaseList = [];
+    var purchaseList = [];
     const purchaseObj = JSON.parse(data[2]);
     if(purchaseObj && purchaseObj["body"]){
       purchaseList = purchaseObj["body"]["purchase_list"];
@@ -78,6 +78,15 @@ module.exports.handler = (event, context, callback) => {
       callback(null, response);
     });
 
+  }).catch((err)=>{
+    console.log("Error:", err);
+    const response = {
+      statusCode: 500,
+      body: JSON.stringify({
+        "Error": err
+      })
+    };
+    callback(null, response);
   });
 };
 

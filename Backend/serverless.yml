@@ -193,7 +193,7 @@ functions:
   getTotalPurchase:
     handler: purchaseService/getTotal.handler
     environment:
-      SERVOCE_END_POINT:
+      SERVICE_END_POINT:
         Fn::Join:
           - ""
           - - "https://"
