@@ -1,0 +1,278 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: checkout-system # NOTE: update this with your service name
+
+# You can pin your service to only deploy with a specific Serverless version
+# Check out our docs for more details
+# frameworkVersion: "=X.X.X"
+
+provider:
+  name: aws
+  runtime: nodejs6.10
+  stage: dev
+  region: ap-southeast-1
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+       - dynamodb:Query
+       - dynamodb:Scan
+       - dynamodb:GetItem
+       - dynamodb:PutItem
+       - dynamodb:UpdateItem
+       - dynamodb:DeleteItem
+      Resource: [
+        Fn::GetAtt: [ pricingRules , Arn],
+        Fn::GetAtt: [ products , Arn],
+        Fn::GetAtt: [ purchase , Arn]
+      ]
+
+
+functions:
+  getProducts:
+    handler: productsService/getProducts.handler
+    environment:
+      REGION: ap-southeast-1
+      TABLE_NAME: products
+    events:
+      - http:
+          path: products
+          method: get
+          cors: true
+  createProduct:
+    handler: productsService/createProduct.handler
+    environment:
+      REGION: ap-southeast-1
+      TABLE_NAME: products
+    events:
+      - http:
+          path: products
+          method: post
+          cors: true
+  getProduct:
+    handler: productsService/getProduct.handler
+    environment:
+      REGION: ap-southeast-1
+      TABLE_NAME: products
+    events:
+      - http:
+          path: products/{id}
+          method: get
+          cors: true
+  deleteProduct:
+    handler: productsService/deleteProduct.handler
+    environment:
+      REGION: ap-southeast-1
+      TABLE_NAME: products
+    events:
+      - http:
+          path: products/{id}
+          method: delete
+          cors: true
+  updateProduct:
+    handler: productsService/updateProduct.handler
+    environment:
+      REGION: ap-southeast-1
+      TABLE_NAME: products
+    events:
+      - http:
+          path: products/{id}
+          method: put
+          cors: true
+  getPricingRules:
+    handler: pricingRulesService/getPricingRules.handler
+    environment:
+      REGION: ap-southeast-1
+      TABLE_NAME: pricingRules
+    events:
+      - http:
+          path: pricing_rules
+          method: get
+          cors: true
+  createPricingRules:
+    handler: pricingRulesService/createPricingRules.handler
+    environment:
+      REGION: ap-southeast-1
+      TABLE_NAME: pricingRules
+    events:
+      - http:
+          path: pricing_rules
+          method: post
+          cors: true
+  getPricingRule:
+    handler: pricingRulesService/getPricingRule.handler
+    environment:
+      REGION: ap-southeast-1
+      TABLE_NAME: pricingRules
+    events:
+      - http:
+          path: pricing_rules/{id}
+          method: get
+          cors: true
+  deletePricingRule:
+    handler: pricingRulesService/deletePricingRule.handler
+    environment:
+      REGION: ap-southeast-1
+      TABLE_NAME: pricingRules
+    events:
+      - http:
+          path: pricing_rules/{id}
+          method: delete
+          cors: true
+  updatePricingRule:
+    handler: pricingRulesService/updatePricingRule.handler
+    environment:
+      REGION: ap-southeast-1
+      TABLE_NAME: pricingRules
+    events:
+      - http:
+          path: pricing_rules/{id}
+          method: put
+          cors: true
+
+  getAllPurchase:
+    handler: purchaseService/getAllPurchase.handler
+    environment:
+      REGION: ap-southeast-1
+      TABLE_NAME: purchase
+    events:
+      - http:
+          path: purchase
+          method: get
+          cors: true
+  createPurchase:
+    handler: purchaseService/createPurchase.handler
+    environment:
+      REGION: ap-southeast-1
+      TABLE_NAME: purchase
+    events:
+      - http:
+          path: purchase
+          method: post
+          cors: true
+  getPurchase:
+    handler: purchaseService/getPurchase.handler
+    environment:
+      REGION: ap-southeast-1
+      TABLE_NAME: purchase
+    events:
+      - http:
+          path: purchase/{id}
+          method: get
+          cors: true
+  deletePurchase:
+    handler: purchaseService/deletePurchase.handler
+    environment:
+      REGION: ap-southeast-1
+      TABLE_NAME: purchase
+    events:
+      - http:
+          path: purchase/{id}
+          method: delete
+          cors: true
+  updatePurchase:
+    handler: purchaseService/updatePurchase.handler
+    environment:
+      REGION: ap-southeast-1
+      TABLE_NAME: purchase
+    events:
+      - http:
+          path: purchase/{id}
+          method: put
+          cors: true
+  getTotalPurchase:
+    handler: purchaseService/getTotal.handler
+    environment:
+      SERVOCE_END_POINT:
+        Fn::Join:
+          - ""
+          - - "https://"
+            - Ref: "ApiGatewayRestApi"
+            - ".execute-api.${self:provider.region}.amazonaws.com/${self:provider.stage}"
+    events:
+      - http:
+          path: purchase/{id}/total
+          method: get
+          cors: true
+
+
+resources:
+  Resources:
+    products:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: products
+        AttributeDefinitions:
+          [
+            {
+              "AttributeName": "id",
+              "AttributeType": "S"
+            }
+          ]
+        KeySchema:
+          [
+            {
+              "AttributeName": "id",
+              "KeyType": "HASH"
+            }
+          ]
+
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+
+    pricingRules:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: pricingRules
+        AttributeDefinitions:
+          [
+            {
+              "AttributeName": "id",
+              "AttributeType": "S"
+            }
+          ]
+        KeySchema:
+          [
+            {
+              "AttributeName": "id",
+              "KeyType": "HASH"
+            }
+          ]
+
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+
+    purchase:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: purchase
+        AttributeDefinitions:
+          [
+            {
+              "AttributeName": "id",
+              "AttributeType": "S"
+            }
+          ]
+        KeySchema:
+          [
+            {
+              "AttributeName": "id",
+              "KeyType": "HASH"
+            }
+          ]
+
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
